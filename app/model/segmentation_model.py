@@ -22,7 +22,9 @@ class SegmentUFO:
 
     def initialize_segmentation_model(self):
         #sam_checkpoint = "sam_vit_h_4b8939.pth"
-        sam_checkpoint = hf_hub_download("ybelkada/segment-anything", "checkpoints/sam_vit_h_4b8939.pth")
+        #sam_checkpoint = hf_hub_download("ybelkada/segment-anything", "checkpoints/sam_vit_h_4b8939.pth")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        sam_checkpoint = os.path.join(current_dir, '../weights/sam_vit_h_4b8939.pth')
         device = "cuda"
         model_type = "default"
 
