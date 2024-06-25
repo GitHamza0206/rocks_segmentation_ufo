@@ -34,7 +34,7 @@ class Sidebar:
                 folders.append(folder)
         
         folders.append(new_folder)
-        selected_filename = ct.selectbox('📁 Select a folder for saving', folders)
+        selected_filename = ct.selectbox('📁 Select a folder for saving', folders, key="folder_selectbox")
         if selected_filename==folders[-1]: #if we select "add new folder"
             fn,fb=ct.columns(2)
             folder_name = fn.text_input('Client name',placeholder="Client name", label_visibility='collapsed')

@@ -1,0 +1,9 @@
+
+{
+    "XTO_2A_09-19-23.jpg": {
+        "image_path": "original/XTO_2A_09-19-23.jpg",
+        "no_background_path": "nobackground/XTO_2A_09-19-23_no_background.png",
+        "masked_path":"masks/XTO_2A_09-19-23_masks.png",
+        "segmentation_path": "segmented/XTO_2A_09-19-23_segmented.png"
+    }
+}
