@@ -1,7 +1,8 @@
 import requests
+from io import BytesIO
 
 class BackgroundRemover:
-    def __init__(self,image_path ):
+    def __init__(self,image_path=None):
         self.image_path = image_path
         self.api_key= "VJ5PaysdeSEuL4TvmdXKsxdS"
 
@@ -13,10 +14,32 @@ class BackgroundRemover:
             headers={'X-Api-Key': self.api_key},
         )
         if response.status_code == requests.codes.ok:
+            print(response.content)
             with open('no-bg.png', 'wb') as out:
                 out.write(response.content)
         else:
             print("Error:", response.status_code, response.text)
+
+    def resize_image(self, image, size=(1024, 1024)):
+        return image.resize(size)
+
+    def remove_bg(self, image, save_path='no-bg.png'):
+        image = self.resize_image(image)
+        buffer = BytesIO()
+        image = image.convert('RGB')
+        image.save(buffer, format='JPEG')
+        image_bytes = buffer.getvalue()
+        response = requests.post(
+            'https://api.remove.bg/v1.0/removebg',
+            files={'image_file': image_bytes},
+            data={'size': 'auto'},
+            headers={'X-Api-Key': self.api_key},
+        )
+        if response.status_code == requests.codes.ok:
+            return response.content
+        else:
+            print("Error:", response.status_code, response.text)
+            return response.text
 
 # Usage example
 if __name__=="__main__":

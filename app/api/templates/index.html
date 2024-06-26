@@ -100,16 +100,19 @@
                                         <img id="preview-image" src="" alt="Preview" class="max-w-full h-auto rounded-lg">
                                     </div>
                                 </div>
-                                
-                                <!-- Scaling Factor Measurement -->
-                                <div id="scaling-factor" class="mb-4 hidden">
-                                    <h4 class="text-lg font-semibold mb-2">Set Scaling Factor</h4>
-                                    <p class="text-sm text-gray-600 mb-2">Click and drag on the image to measure 1 cm on the ruler.</p>
+
+                                <!-- Nouveau formulaire pour le facteur d'échelle -->
+                                <div class="mt-4">
+                                    <label for="scaling-factor" class="block text-sm font-medium text-gray-700">Scaling Factor</label>
+                                    <p class="text-sm text-gray-600 mb-2">Please measure how much 1cm represents in px</p>
                                     <div class="flex items-center">
-                                        <span class="text-sm font-medium mr-2">Pixels per cm:</span>
-                                        <input type="number" id="pixels-per-cm" class="border rounded px-2 py-1 w-20 text-right" readonly>
+                                        <span class="mr-2">1 cm =</span>
+                                        <input type="number" id="scaling-factor" name="scaling-factor" class="mt-1 block w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Pixels">
+                                        <span class="ml-2">px</span>
                                     </div>
                                 </div>
+                                
+                                
 
                                 <button id="detectButton" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                                     Detect
@@ -196,127 +199,9 @@
             </main>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.1/fabric.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
-<script>
-    document.querySelector('button').addEventListener('click', function() {
-        var input = document.querySelector('input[type="file"]');
-        var data = new FormData();
-        data.append('image', input.files[0]);
-    
-        fetch('/detect_ufo', {
-            method: 'POST',
-            body: data
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('results').innerHTML = `
-                <p>UFO detected: ${data.ufo_detected ? 'Yes' : 'No'}</p>
-            `;
-        });
-    });
-
-    tailwind.config = {
-        theme: {
-            extend: {
-                animation: {
-                    fadeIn: 'fadeIn 1.5s ease-in-out',
-                    slideUp: 'slideUp 0.5s ease-in-out',
-                }
-            }
-        }
-    }
-
-        const dropArea = document.getElementById('drop-area');
-        const fileElem = document.getElementById('fileElem');
-        const preview = document.getElementById('preview');
-        const previewImage = document.getElementById('preview-image');
-        const detectButton = document.getElementById('detectButton');
-        const results = document.getElementById('results');
-    
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-        });
-    
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, highlight, false);
-        });
-    
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, unhighlight, false);
-        });
-    
-        function highlight() {
-            dropArea.classList.add('border-indigo-500', 'bg-gray-50');
-        }
-    
-        function unhighlight() {
-            dropArea.classList.remove('border-indigo-500', 'bg-gray-50');
-        }
-    
-        dropArea.addEventListener('drop', handleDrop, false);
-    
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles(files);
-        }
-    
-        function handleFiles(files) {
-            if (files.length > 0) {
-                const file = files[0];
-                previewFile(file);
-                detectButton.disabled = false;
-            }
-        }
-    
-        function previewFile(file) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onloadend = function() {
-                preview.classList.remove('hidden');
-                previewImage.src = reader.result;
-            }
-        }
-    
-        detectButton.addEventListener('click', function() {
-            const file = fileElem.files[0];
-            if (!file) return;
-    
-            const formData = new FormData();
-            formData.append('image', file);
-    
-            results.innerHTML = '<p class="text-gray-600">Processing... Please wait.</p>';
-    
-            fetch('/detect_ufo', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.report_url) {
-                    results.innerHTML = `
-                        <p class="text-green-600 mb-4">Detection complete! Your report is ready.</p>
-                        <a href="${data.report_url}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
-                            View PDF Report
-                        </a>
-                    `;
-                } else {
-                    results.innerHTML = '<p class="text-red-600">An error occurred while generating the report. Please try again.</p>';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                results.innerHTML = '<p class="text-red-600">An error occurred. Please try again.</p>';
-            });
-        });
-
-    </script>
-
   
 
 </html>

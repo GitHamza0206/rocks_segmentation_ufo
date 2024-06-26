@@ -1,39 +1,47 @@
 from flask import Flask, request, jsonify, render_template,send_file
-import io
+from  io import BytesIO
+import cv2
+import numpy as np
+from PIL import Image
+import base64
+import sys
 
-# import cv2
-# import numpy as np
-# from rembg import remove
-# import base64
-# from background_remover import BackgroundRemover
+from background_remover.remove_bg import BackgroundRemover
+
 
 app = Flask(__name__)
 
-# def base64_to_image(base64_string):
-#     img_data = base64.b64decode(base64_string)
-#     nparr = np.frombuffer(img_data, np.uint8)
-#     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-#     return img
+def base64_to_image(base64_string):
+    img_data = base64.b64decode(base64_string)
+    nparr = np.frombuffer(img_data, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    return img
 
-# def image_to_base64(image):
-#     _, buffer = cv2.imencode('.png', image)
-#     return base64.b64encode(buffer).decode('utf-8')
+def image_to_base64(image):
+    _, buffer = cv2.imencode('.png', image)
+    return base64.b64encode(buffer).decode('utf-8')
 
-# @app.route('/remove_background', methods=['POST'])
-# def remove_background():
-#     data = request.json
-#     image_b64 = data['image']
+@app.route('/')
+def index():
+    print('test')
+    return render_template('index.html') 
+
+
+@app.route('/remove_background', methods=['POST'])
+def remove_background():
+    if 'image' not in request.files:
+        return 'No image file provided', 400
+
+    image_file = request.files['image']
+    image = Image.open(image_file)
+
     
-#     # Convert base64 to image
-#     input_image = base64_to_image(image_b64)
-    
-#     # Remove background
-#     output_image = remove(input_image)
-    
-#     # Convert result back to base64
-#     result_b64 = image_to_base64(output_image)
-    
-#     return jsonify({'result': result_b64})
+    bg = BackgroundRemover()
+    bg_removed = bg.remove_bg(image)
+    #check if bg_removed is not string
+    if type(bg_removed) == str:
+        return bg_removed
+    return  send_file(BytesIO(bg_removed), mimetype='image/jpeg')
 
 # @app.route('/detect_ufo', methods=['POST'])
 # def detect_ufo():
@@ -101,9 +109,46 @@ app = Flask(__name__)
 #     # Write the PDF to the buffer
 #     return buffer
 
-@app.route('/')
-def index():
-    return render_template('index.html') 
+@app.route('/detect_ufo', methods=['POST'])
+def detect_ufo():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image provided'}), 400
+
+    image = request.files['image']
+    pixels_per_cm = float(request.form.get('pixels_per_cm', 0))
+    
+    if pixels_per_cm <= 0:
+        return jsonify({'error': 'Invalid scaling factor'}), 400
+
+    # Your UFO detection logic here, using the pixels_per_cm for scaling
+    # ...
+
+    # Generate PDF report
+    # pdf_buffer = generate_pdf_report(detection_results, pixels_per_cm)
+
+    # # Save PDF to a file or to memory
+    # pdf_buffer.seek(0)
+    
+    # # In a real application, you might want to save this file and return its URL
+    # # For this example, we'll use send_file to serve it directly
+    # return send_file(
+    #     pdf_buffer,
+    #     as_attachment=True,
+    #     download_name='ufo_detection_report.pdf',
+    #     mimetype='application/pdf'
+    # )
+    return "ok"
+
+def generate_pdf_report(results, pixels_per_cm):
+    # Your PDF generation logic here
+    # Use the pixels_per_cm to provide accurate measurements in the report
+    buffer = io.BytesIO()
+    # Use a PDF library like ReportLab to generate the PDF
+    # Write the PDF to the buffer
+    return buffer
+
+
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5200, )
